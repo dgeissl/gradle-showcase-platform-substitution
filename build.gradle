@@ -1,0 +1,63 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation platform('org.springframework.boot:spring-boot-dependencies:1.5.8.RELEASE')
+
+    implementation 'dom4j:dom4j' // dependency without version
+}
+
+// adding even more constraints that affect the used BOM
+// (e.g. manipulating the group of a external BOM to test unreleased changes on the ci server)
+
+configurations.all {
+    resolutionStrategy {
+        def variant = System.getProperty("substitution")
+        // variant 1: not working
+        if ("useTarget" == variant) {
+            eachDependency {
+                // in this example project only the `platform` dependency is affected as the http client does not provide a version
+                if (requested.version) {
+                    // this is a dummy replacement, it actually just copies the coordinates from the original dependnecy
+                    // expected is to not change anything, but actually the attributes and contraints are lost when using `useTarget`
+                    // thus converting the `platform` dependency is a ordinary dependency that can not help to resolve versions for
+                    // other dependencies
+                    useTarget "${requested.group}:${requested.name}:${requested.version}"
+                    // just changing the version with `useVersion requested.version` works perfectly fine
+                }
+            }
+        }
+        // variant 2: not working
+        else if ("substituteModule" == variant) {
+            dependencySubstitution {
+                substitute module('org.springframework.boot:spring-boot-dependencies') with module('org.springframework.boot:spring-boot-dependencies:1.5.8.RELEASE')
+            }
+        }
+        // variant 3: can not modify group, but only version
+        else if ("useVersion" == variant) {
+            eachDependency {
+                if (requested.version) {
+                    // just changing the version with `useVersion requested.version` works perfectly fine
+                    useVersion requested.version
+                }
+            }
+        }
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+// we need a task that will resolve all dependencies that may be used by the build
+// (e.g. in case of unstable network connections this is kind of a preload to make sure the build works once passing this task)
+task resolveDependencies {
+    setDescription "Resolves all projects dependencies from the repository."
+    setGroup "ci-Server"
+    doLast {
+        rootProject.allprojects { project ->
+            Set<Configuration> configurations = buildscript.configurations + project.configurations
+            configurations.findAll { c -> c.canBeResolved }
+                    .forEach { c -> c.resolve() }
+        }
+    }
+}
