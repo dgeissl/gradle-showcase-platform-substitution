@@ -1,4 +1,5 @@
 Showcasing a problem with dependency substitution in gradle, when applied to BOM dependencies:
+Reported in https://github.com/gradle/gradle/issues/14396
 
 # Usage
 
