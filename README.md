@@ -7,7 +7,7 @@ Substitute the BOM dependency via `eachDependency { useTarget ... }` (broken)
  
     gradlew resolveDependencies -Dsubstitution=useTarget
     
-Substitute the BOM dependency via `dependencySubstitution { substitute module ... }` (broken)
+Substitute the BOM dependency via `dependencySubstitution { substitute module ... }` (half working and half broken)
     
     gradlew resolveDependencies -Dsubstitution=substituteModule
 

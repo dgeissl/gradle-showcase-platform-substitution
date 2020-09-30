@@ -22,14 +22,18 @@ configurations.all {
                     // thus converting the `platform` dependency is a ordinary dependency that can not help to resolve versions for
                     // other dependencies
                     useTarget "${requested.group}:${requested.name}:${requested.version}"
-                    // just changing the version with `useVersion requested.version` works perfectly fine
                 }
             }
         }
         // variant 2: not working
         else if ("substituteModule" == variant) {
             dependencySubstitution {
-                substitute module('org.springframework.boot:spring-boot-dependencies') with module('org.springframework.boot:spring-boot-dependencies:1.5.8.RELEASE')
+                // does not work
+                // substitute module('org.springframework.boot:spring-boot-dependencies') with module('org.springframework.boot:spri_ng-boot-dependencies:1.5.8.RELEASE')
+                // works, but shouldn't?
+                //substitute module('org.springframework.boot:spring-boot-dependencies') with platform(module('org.springframework.boot:spri_ng-boot-dependencies:1.5.8.RELEASE'))
+                // works
+                substitute platform(module('org.springframework.boot:spring-boot-dependencies')) with platform(module('org.springframework.boot:spring-boot-dependencies:1.5.8.RELEASE'))
             }
         }
         // variant 3: can not modify group, but only version
